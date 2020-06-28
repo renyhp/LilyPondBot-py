@@ -1,4 +1,5 @@
-*token.txt
+*.txt
+userfiles/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
