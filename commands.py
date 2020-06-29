@@ -3,7 +3,7 @@ import os
 from datetime import timedelta, datetime, timezone
 
 from telegram import Update, ChatAction, Bot, TelegramError, InlineQueryResultArticle, InputTextMessageContent, \
-    InlineQueryResultCachedPhoto, InlineQueryResultCachedDocument
+    InlineQueryResultCachedPhoto, InlineQueryResultCachedDocument, InlineKeyboardMarkup, InlineKeyboardButton
 
 from uuid import uuid4
 
@@ -43,14 +43,17 @@ def help_(update: Update, context):
     update.message.reply_html(
         f"Send me some LilyPond code{'in PM' if update.message.chat.type != 'private' else ''}, "
         "I will compile it for you and send you a picture with the sheet music."
-        "\nFor now I can compile only little pieces of music, so the output of a big sheet music could be bad."
+        "\nYou can now use me in inline mode! Try me with the button below."
         "\n\n<b>What is LilyPond?</b>\n<i>LilyPond is a very powerful open-source music engraving program, "
         "which compiles text code to produce sheet music output. Full information:</i> lilypond.org"
         "\n\n<b>Feedback</b>"
         "\n<i>For any kind of feedback, you can freely message my dev at </i>@renyhp"
         "\n<i>Donations are welcome at </i>paypal.me/renyhp"
         "\n\n<b>Other commands:</b>"
-        "\n/ping - Check response time\n/version - Get the running version", disable_web_page_preview=True)
+        "\n/ping - Check response time\n/version - Get the running version", disable_web_page_preview=True,
+        reply_markup=InlineKeyboardMarkup.from_button(
+            InlineKeyboardButton("Try me in inline mode!",
+                                 switch_inline_query_current_chat="\\score{{c' e' g' e'} \\layout{} \\midi{}}")))
 
 
 def ping(update: Update, context):
@@ -85,8 +88,7 @@ def send_compile_results(update: Update, context):
     # compile
     filename, output, error = lilypond.lilypond_compile(
         update.inline_query.query if is_inline_query else update.message.text,
-        update.effective_user.username or
-        str(update.effective_user.id))
+        update.effective_user.username or str(update.effective_user.id))
 
     # send text
     if is_inline_query:
