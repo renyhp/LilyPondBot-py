@@ -18,7 +18,7 @@ def generate_filename(user: str):
             return filename
 
 
-def compile_text(text: str, username: str):
+def lilypond_compile(text: str, username: str):
     from constants import USER_FILES_DIR, LILY_VERSION, LILYSETTINGS_PATH
 
     # where do we store the file
@@ -38,10 +38,10 @@ def compile_text(text: str, username: str):
         ["-dbackend=eps", "-dresolution=300", "--png", "--loglevel=WARN", f"--output={USER_FILES_DIR}/", src_file])
 
     # prettify output
-    abs_path = str(pathlib.Path(src_file).absolute())
-    error.replace(abs_path + ":", "")
-    error.replace(abs_path, f"{filename}.ly")
-    error.replace("\n\n", "\n")
+    error = error.replace(f"{os.getcwd()}/", "") \
+        .replace(f"{USER_FILES_DIR}/", "") \
+        .replace(f"{filename}.ly:", "") \
+        .replace("\n\n", "\n")
 
     return filename, output, error
 
@@ -55,5 +55,6 @@ def add_padding(file_path):
 
 def lilypond_process(args: List[str]):
     args.insert(0, "lilypond")
-    process = subprocess.run(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+    process = subprocess.run(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+                             text=True, env={**os.environ, "LANG": "en"})
     return process.stdout, process.stderr

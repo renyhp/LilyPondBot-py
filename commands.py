@@ -2,12 +2,15 @@ import glob
 import os
 from datetime import timedelta, datetime, timezone
 
-from telegram import Update, ChatAction, Bot, TelegramError
+from telegram import Update, ChatAction, Bot, TelegramError, InlineQueryResultArticle, InputTextMessageContent, \
+    InlineQueryResultCachedPhoto, InlineQueryResultCachedDocument
+
+from uuid import uuid4
 
 import constants
 import lilypond
 import monitor
-from constants import RENYHP, VERSION_NUMBER, USER_FILES_DIR
+from constants import RENYHP, VERSION_NUMBER, USER_FILES_DIR, DEV_NULL
 
 
 def format_timedelta(td: timedelta):
@@ -21,14 +24,19 @@ def start(update: Update, context):
         "I will compile it for you and send you a picture with the sheet music.")
 
 
-def secure_send(bot: Bot, chat_id, text: str, filename: str):
+def secure_send(bot: Bot, chat_id, text: str, filename: str, is_inline_query: bool):
     if len(text) < 4000:
-        bot.send_message(chat_id, text)
+        if is_inline_query:
+            return InlineQueryResultArticle(uuid4(), "Log", InputTextMessageContent(text))
+        else:
+            bot.send_message(chat_id, text)
     else:
         with open(filename, "w") as file:
             file.write(text)
         with open(filename, "rb") as file:
-            bot.send_document(chat_id, file)
+            document_message = bot.send_document(chat_id, file)
+        if is_inline_query:
+            return InlineQueryResultCachedDocument(uuid4(), "Log", document_message.document.file_id)
 
 
 def help_(update: Update, context):
@@ -62,44 +70,74 @@ def version(update: Update, context):
         f'GNU LilyPond {constants.LILY_VERSION}')
 
 
-def compile_message(update: Update, context):
+def send_compile_results(update: Update, context):
+    # is this an inline query or text message
+    is_inline_query = update.inline_query is not None
+    if (is_inline_query and not update.inline_query.query) or (not is_inline_query and not update.message.text):
+        return
+
+    inline_query_results = []
+
     # typing...
-    update.effective_chat.send_action(ChatAction.TYPING)
+    if not is_inline_query:
+        update.effective_chat.send_action(ChatAction.TYPING)
 
     # compile
-    filename, output, error = lilypond.compile_text(update.message.text,
-                                                    update.effective_user.username or
-                                                    str(update.effective_user.id))
+    filename, output, error = lilypond.lilypond_compile(
+        update.inline_query.query if is_inline_query else update.message.text,
+        update.effective_user.username or
+        str(update.effective_user.id))
 
     # send text
+    if is_inline_query:
+        inline_query_results.append(
+            InlineQueryResultArticle(uuid4(), "Source code", InputTextMessageContent(update.inline_query.query)))
+
     if error:
-        secure_send(context.bot, update.effective_chat.id, error, f"{USER_FILES_DIR}/{filename}.log")
+        result = secure_send(context.bot, DEV_NULL if is_inline_query else update.effective_chat.id, error,
+                             f"{USER_FILES_DIR}/{filename}.log", is_inline_query)
+        if result is not None:
+            inline_query_results.append(result)
 
     if output:  # I want to know if that happens...
         error = f"ERROR\n\n{error}"
         output = f"OUTPUT\n\n{output}"
-        secure_send(context.bot, RENYHP, error, f"{USER_FILES_DIR}/{filename}.error")
-        secure_send(context.bot, RENYHP, output, f"{USER_FILES_DIR}/{filename}.output")
+        secure_send(context.bot, RENYHP, error, f"{USER_FILES_DIR}/{filename}.error", False)
+        secure_send(context.bot, RENYHP, output, f"{USER_FILES_DIR}/{filename}.output", False)
 
     successfully_compiled = False
 
     # send png's
     for png_file in glob.glob(f"{USER_FILES_DIR}/{filename}*.png"):
-        successfully_compiled = True # yay compiled
-        update.effective_chat.send_action(ChatAction.UPLOAD_PHOTO)
+        successfully_compiled = True  # yay compiled
+        if not is_inline_query:
+            update.effective_chat.send_action(ChatAction.UPLOAD_PHOTO)
         lilypond.add_padding(png_file)
-        with open(png_file, "rb") as file:
-            try:
-                update.message.reply_photo(file)
-            except TelegramError:
-                update.message.reply_document(file)
+        if is_inline_query:
+            with open(png_file, "rb") as file:
+                file_id = context.bot.send_photo(DEV_NULL, file).photo[0].file_id
+            inline_query_results.append(InlineQueryResultCachedPhoto(uuid4(), file_id))
+        else:
+            with open(png_file, "rb") as file:
+                try:
+                    update.message.reply_photo(file)
+                except TelegramError:
+                    update.message.reply_document(file)
 
     # send midi's
     for midi_file in glob.glob(f"{USER_FILES_DIR}/{filename}*.midi"):
         successfully_compiled = True
-        update.effective_chat.send_action(ChatAction.UPLOAD_AUDIO)
-        with open(midi_file, "rb") as file:
-            update.message.reply_document(file)
+        if is_inline_query:
+            with open(midi_file, "rb") as file:
+                file_id = context.bot.send_document(DEV_NULL, file).document.file_id
+            inline_query_results.append(InlineQueryResultCachedDocument(uuid4(), "MIDI output", file_id))
+        else:
+            update.effective_chat.send_action(ChatAction.UPLOAD_AUDIO)
+            with open(midi_file, "rb") as file:
+                update.message.reply_document(file)
+
+    if is_inline_query:
+        update.inline_query.answer(inline_query_results)
 
     if successfully_compiled and update.effective_user.id != RENYHP:
         monitor.successful_compilations += 1
@@ -107,5 +145,3 @@ def compile_message(update: Update, context):
     # clean up
     for filename in glob.glob(f"{USER_FILES_DIR}/{filename}*"):
         os.remove(filename)
-
-

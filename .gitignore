@@ -1,4 +1,5 @@
-*.txt
+*token.txt
+logs.txt
 user_files/
 
 # Byte-compiled / optimized / DLL files

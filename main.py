@@ -3,11 +3,12 @@ from datetime import datetime, timezone
 
 from telegram import Update
 from telegram.error import TelegramError
-from telegram.ext import Updater, CommandHandler, CallbackContext, JobQueue, Dispatcher, MessageHandler
+from telegram.ext import Updater, CommandHandler, CallbackContext, JobQueue, Dispatcher, MessageHandler, \
+    InlineQueryHandler
 from telegram.ext.filters import Filters
 
 import monitor
-from commands import start, help_, ping, version, compile_message
+from commands import start, help_, ping, version, send_compile_results
 from constants import TOKEN_PATH, RENYHP, LOG_PATH
 
 # noinspection SpellCheckingInspection
@@ -47,10 +48,11 @@ def main():
     dispatcher.add_handler(MessageHandler(Filters.text, update_monitor), group=0)
     for cmd, callback in (("start", start), ("help", help_), ("ping", ping), ("version", version)):
         dispatcher.add_handler(CommandHandler(cmd, callback), group=1)
-    dispatcher.add_handler(MessageHandler(~Filters.command & Filters.private, compile_message), group=1)
+    dispatcher.add_handler(MessageHandler(~Filters.command & Filters.private & Filters.text, send_compile_results),
+                           group=1)
+    dispatcher.add_handler(InlineQueryHandler(send_compile_results), group=1)
     dispatcher.add_error_handler(log_error)
-    job_queue: JobQueue = updater.job_queue
-    job_queue.run_repeating(monitor.program_monitor, 60, 0)
+    updater.job_queue.run_repeating(monitor.program_monitor, 60, 0)
     updater.start_polling()
     updater.idle()
 
