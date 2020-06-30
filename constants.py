@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import lilypond
 
 # noinspection SpellCheckingInspection
-TOKEN_PATH = "debugtoken.txt"
+TOKEN_PATH = "token.txt"
 LOG_PATH = "logs.txt"
 RENYHP = 133748469
 DEV_NULL = -1001483993984
