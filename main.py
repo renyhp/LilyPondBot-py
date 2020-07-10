@@ -10,7 +10,7 @@ from telegram.ext.filters import Filters
 import monitor
 import os
 from commands import start, help_, ping, version, send_compile_results
-from constants import RENYHP, LOG_PATH
+from constants import RENYHP
 
 
 def chunks(s, n):
@@ -24,8 +24,7 @@ def log_error(update: Update, context: CallbackContext):  # maybe use package "l
     error_str = f"{datetime.now(timezone.utc).strftime('%d/%m/%Y %H:%M:%S UTC')}" \
                 f"\n{''.join(traceback.format_tb(error.__traceback__))}" \
                 f"{type(error).__name__}: {error}"
-    with open(LOG_PATH, 'a') as log_file:
-        log_file.write("\n" + ("-" * 80) + "\n" + error_str + "\n\n")
+    print("\n" + ("-" * 80) + "\n" + error_str + "\n\n")
     for chunk in chunks(error_str, 4000):
         context.bot.send_message(RENYHP, chunk)
 
