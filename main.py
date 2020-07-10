@@ -58,7 +58,7 @@ def main():
                            group=1)
     dispatcher.add_handler(InlineQueryHandler(send_compile_results), group=1)
     dispatcher.add_error_handler(log_error)
-    updater.job_queue.run_repeating(monitor.program_monitor, 60, 0)
+    # updater.job_queue.run_repeating(monitor.program_monitor, 60, 0)
     updater.start_polling(clean=True)
     updater.idle()
 

@@ -25,6 +25,7 @@ def get_monitor(bot_username):
                           successful_compilations)
 
 
+# not used anymore
 def program_monitor(context: CallbackContext):
     os.system('cls' if os.name == 'nt' else 'clear') or None
     print(get_monitor(context.bot.username))
