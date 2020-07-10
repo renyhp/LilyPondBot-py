@@ -8,12 +8,9 @@ from telegram.ext import Updater, CommandHandler, CallbackContext, JobQueue, Dis
 from telegram.ext.filters import Filters
 
 import monitor
+import os
 from commands import start, help_, ping, version, send_compile_results
-from constants import TOKEN_PATH, RENYHP, LOG_PATH
-
-# noinspection SpellCheckingInspection
-with open(TOKEN_PATH, 'r') as token_file:
-    token = token_file.read().strip()
+from constants import RENYHP, LOG_PATH
 
 
 def chunks(s, n):
@@ -47,7 +44,7 @@ def update_monitor(update: Update, context: CallbackContext):
 
 def main():
     # noinspection SpellCheckingInspection
-    updater = Updater(token, use_context=True)
+    updater = Updater(os.environ.get("LILYPONDBOT_TOKEN"), use_context=True)
 
     dispatcher: Dispatcher = updater.dispatcher
     dispatcher.add_handler(MessageHandler(Filters.text, update_monitor), group=0)
