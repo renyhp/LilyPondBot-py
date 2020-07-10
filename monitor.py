@@ -8,6 +8,8 @@ latest_message_time = datetime.now(timezone.utc)
 messages_received = 0
 commands_processed = 0
 successful_compilations = 0
+inline_queries = 0
+user_ids = set()
 
 
 def get_monitor(bot_username):
@@ -16,7 +18,9 @@ def get_monitor(bot_username):
                           LILY_VERSION,
                           START_TIME.strftime("%d/%m/%Y %H:%M:%S UTC"),
                           latest_message_time.strftime("%d/%m/%Y %H:%M:%S UTC"),
+                          len(user_ids),
                           messages_received,
+                          inline_queries,
                           commands_processed,
                           successful_compilations)
 

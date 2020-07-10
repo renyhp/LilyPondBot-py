@@ -35,9 +35,14 @@ def log_error(update: Update, context: CallbackContext):  # maybe use package "l
 
 def update_monitor(update: Update, context: CallbackContext):
     if update.effective_user.id != RENYHP:
-        monitor.messages_received += 1
-        if update.message.text.startswith("/"):
-            monitor.commands_processed += 1
+        monitor.user_ids.add(update.effective_user.id)
+        monitor.latest_message_time = datetime.now(timezone.utc)
+        if update.message:
+            monitor.messages_received += 1
+            if update.message.text.startswith("/"):
+                monitor.commands_processed += 1
+        elif update.inline_query:
+            monitor.inline_queries += 1
 
 
 def main():
@@ -46,6 +51,7 @@ def main():
 
     dispatcher: Dispatcher = updater.dispatcher
     dispatcher.add_handler(MessageHandler(Filters.text, update_monitor), group=0)
+    dispatcher.add_handler(InlineQueryHandler(update_monitor), group=0)
     for cmd, callback in (("start", start), ("help", help_), ("ping", ping), ("version", version)):
         dispatcher.add_handler(CommandHandler(cmd, callback), group=1)
     dispatcher.add_handler(MessageHandler(~Filters.command & Filters.private & Filters.text, send_compile_results),

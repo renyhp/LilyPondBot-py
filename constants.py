@@ -23,6 +23,8 @@ GNU LilyPond {}
 
 Start time: {}
 Latest message received: {}
+Users seen in this session: {}
 Messages received: {}
+Inline queries received: {}
 Commands processed: {}
 Successful compilations: {}"""
