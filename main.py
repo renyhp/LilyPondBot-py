@@ -1,7 +1,8 @@
 import traceback
 from datetime import datetime, timezone
+from uuid import uuid4
 
-from telegram import Update
+from telegram import Update, InlineQueryResultArticle, InputTextMessageContent
 from telegram.error import TelegramError
 from telegram.ext import Updater, CommandHandler, CallbackContext, JobQueue, Dispatcher, MessageHandler, \
     InlineQueryHandler
@@ -21,11 +22,21 @@ def chunks(s, n):
 
 def log_error(update: Update, context: CallbackContext):  # maybe use package "logging"?
     error: TelegramError = context.error
-    error_str = f"{datetime.now(timezone.utc).strftime('%d/%m/%Y %H:%M:%S UTC')}" \
-                f"\n{''.join(traceback.format_tb(error.__traceback__))}" \
-                f"{type(error).__name__}: {error}"
-    print("\n" + ("-" * 80) + "\n" + error_str + "\n\n")
-    for chunk in chunks(error_str, 4000):
+    error_str = f"{type(error).__name__}: {error}"
+    if update.effective_user.id != RENYHP:
+        try:
+            if update.message is not None:
+                update.message.reply_text(f"Oops! An error has been encountered. Reporting to the dev..."
+                                          f"\n\n{error_str}")
+            elif update.inline_query is not None:
+                update.inline_query.answer([InlineQueryResultArticle(uuid4(), "Oops!", InputTextMessageContent(
+                    f"An error has been encountered. Reporting to the dev...\n\n{error_str}"))])
+        except TelegramError:
+            pass
+    full_error_str = f"{datetime.now(timezone.utc).strftime('%d/%m/%Y %H:%M:%S UTC')}" \
+                     f"\n{''.join(traceback.format_tb(error.__traceback__))}"
+    print("\n" + ("-" * 80) + "\n" + full_error_str + "\n\n")
+    for chunk in chunks(full_error_str, 4000):
         context.bot.send_message(RENYHP, chunk)
 
 
