@@ -23,7 +23,7 @@ def chunks(s, n):
 def log_error(update: Update, context: CallbackContext):  # maybe use package "logging"?
     error: TelegramError = context.error
     error_str = f"{type(error).__name__}: {error}"
-    if update.effective_user.id != RENYHP:
+    if update and update.effective_user and update.effective_user.id != RENYHP:
         try:
             if update.message is not None:
                 update.message.reply_text(f"Oops! An error has been encountered. Reporting to the dev..."
@@ -33,11 +33,13 @@ def log_error(update: Update, context: CallbackContext):  # maybe use package "l
                     f"An error has been encountered. Reporting to the dev...\n\n{error_str}"))])
         except TelegramError:
             pass
-    full_error_str = f"{datetime.now(timezone.utc).strftime('%d/%m/%Y %H:%M:%S UTC')}" \
-                     f"\n{''.join(traceback.format_tb(error.__traceback__))}"
-    print("\n" + ("-" * 80) + "\n" + full_error_str + "\n\n")
+    full_error_str = f"\n{''.join(traceback.format_tb(error.__traceback__))}"
+    print("\n"+ full_error_str + "\n\n")
     for chunk in chunks(full_error_str, 4000):
-        context.bot.send_message(RENYHP, chunk)
+        try:
+            context.bot.send_message(RENYHP, chunk)
+        except TelegramError:
+            pass
 
 
 def update_monitor(update: Update, context: CallbackContext):
