@@ -1,5 +1,6 @@
 import glob
 import os
+import shutil
 from datetime import timedelta, datetime, timezone
 
 from telegram import Update, ChatAction, Bot, TelegramError, InlineQueryResultArticle, InputTextMessageContent, \
@@ -101,8 +102,9 @@ def send_compile_results(update: Update, context):
     if output:  # I want to know if that happens...
         error = f"ERROR\n\n{error}"
         output = f"OUTPUT\n\n{output}"
-        secure_send(context.bot, constants.RENYHP, error, f"{constants.USER_FILES_DIR}/{filename}.error", False)
-        secure_send(context.bot, constants.RENYHP, output, f"{constants.USER_FILES_DIR}/{filename}.output", False)
+        secure_send(context.bot, constants.RENYHP, error, f"{constants.ERROR_FILES_DIR}/{filename}.error", False)
+        secure_send(context.bot, constants.RENYHP, output, f"{constants.ERROR_FILES_DIR}/{filename}.output", False)
+        shutil.copy(f"{constants.USER_FILES_DIR}/{filename}.ly", f"{constants.ERROR_FILES_DIR}/{filename}.ly")
 
     successfully_compiled = False
 
