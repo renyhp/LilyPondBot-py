@@ -26,15 +26,15 @@ def log_error(update: Update, context: CallbackContext):  # maybe use package "l
     if update and update.effective_user and update.effective_user.id != RENYHP:
         try:
             if update.message is not None:
-                update.message.reply_text(f"Oops! An error has been encountered. Reporting to the dev..."
+                update.message.reply_text(f"Oops! An error has occurred. Reporting to the dev..."
                                           f"\n\n{error_str}")
             elif update.inline_query is not None:
                 update.inline_query.answer([InlineQueryResultArticle(uuid4(), "Oops!", InputTextMessageContent(
-                    f"An error has been encountered. Reporting to the dev...\n\n{error_str}"))])
+                    f"An error has occurred. Reporting to the dev...\n\n{error_str}"))])
         except TelegramError:
             pass
-    full_error_str = f"\n{''.join(traceback.format_tb(error.__traceback__))}"
-    print("\n"+ full_error_str + "\n\n")
+    full_error_str = f"{error_str}\n{''.join(traceback.format_tb(error.__traceback__))}"
+    print("\n" + full_error_str + "\n\n")
     for chunk in chunks(full_error_str, 4000):
         try:
             context.bot.send_message(RENYHP, chunk)
