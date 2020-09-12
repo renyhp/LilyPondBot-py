@@ -11,7 +11,7 @@ def generate_filename(user: str):
     from constants import USER_FILES_DIR
     counter = 0
     while True:
-        filename = user + "-" + datetime.utcnow().strftime("%y%m%d%H%M%S") + \
+        filename = datetime.utcnow().strftime("%y%m%d%H%M%S") + "-" + user + \
                    ("" if counter == 0 else f"-{str(counter)}")
         if any(filename in file for file in os.listdir(USER_FILES_DIR)):
             counter += 1
