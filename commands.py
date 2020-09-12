@@ -2,11 +2,10 @@ import glob
 import os
 import shutil
 from datetime import timedelta, datetime, timezone
+from uuid import uuid4
 
 from telegram import Update, ChatAction, Bot, TelegramError, InlineQueryResultArticle, InputTextMessageContent, \
     InlineQueryResultCachedPhoto, InlineQueryResultCachedDocument, InlineKeyboardMarkup, InlineKeyboardButton
-
-from uuid import uuid4
 
 import constants
 import lilypond
