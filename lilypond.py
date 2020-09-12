@@ -1,4 +1,5 @@
 import os
+import shutil
 import pathlib
 import subprocess
 from datetime import datetime
@@ -21,7 +22,7 @@ def generate_filename(user: str):
 
 
 def lilypond_compile(update: Update, context: CallbackContext):
-    from constants import USER_FILES_DIR, LILY_VERSION, LILYSETTINGS_PATH
+    from constants import USER_FILES_DIR, ERROR_FILES_DIR, LILY_VERSION, LILYSETTINGS_PATH
 
     text = update.inline_query.query if update.inline_query else update.message.text
     username = update.effective_user.username or str(update.effective_user.id)
@@ -45,6 +46,7 @@ def lilypond_compile(update: Update, context: CallbackContext):
     except Exception as exc:
         output = ""
         error = f"An error has occurred. Reporting to the dev...\n{type(exc).__name__}: {exc}"
+        shutil.copy(src_file, f"{ERROR_FILES_DIR}/{filename}.ly")
         context.dispatcher.dispatch_error(update, exc)
 
     # prettify output

@@ -9,6 +9,7 @@ DEV_NULL = -1001483993984
 
 LILYSETTINGS_PATH = "lilysettings.ly"
 USER_FILES_DIR = "user_files"
+ERROR_FILES_DIR = "error_files"
 
 VERSION_NUMBER = "2.1"
 COMMIT_HASH = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"]).decode("utf-8")[:-1]
