@@ -46,6 +46,7 @@ def lilypond_compile(update: Update, context: CallbackContext):
     except Exception as exc:
         output = ""
         error = f"An error has occurred. Reporting to the dev...\n{type(exc).__name__}: {exc}"
+        pathlib.Path(ERROR_FILES_DIR).mkdir(parents=True, exist_ok=True)
         shutil.copy(src_file, f"{ERROR_FILES_DIR}/{filename}.ly")
         context.dispatcher.dispatch_error(update, exc)
 
