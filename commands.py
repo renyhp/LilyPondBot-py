@@ -86,9 +86,7 @@ def send_compile_results(update: Update, context):
         update.effective_chat.send_action(ChatAction.TYPING)
 
     # compile
-    filename, output, error = lilypond.lilypond_compile(
-        update.inline_query.query if is_inline_query else update.message.text,
-        update.effective_user.username or str(update.effective_user.id))
+    filename, output, error = lilypond.lilypond_compile(update, context)
 
     # send text
     if is_inline_query:

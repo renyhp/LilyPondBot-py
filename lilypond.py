@@ -3,6 +3,8 @@ import pathlib
 import subprocess
 from datetime import datetime
 from typing import List
+from telegram import Update
+from telegram.ext import CallbackContext
 
 
 def generate_filename(user: str):
@@ -18,8 +20,11 @@ def generate_filename(user: str):
             return filename
 
 
-def lilypond_compile(text: str, username: str):
+def lilypond_compile(update: Update, context: CallbackContext):
     from constants import USER_FILES_DIR, LILY_VERSION, LILYSETTINGS_PATH
+
+    text = update.inline_query.query if update.inline_query else update.message.text
+    username = update.effective_user.username or str(update.effective_user.id)
 
     # where do we store the file
     pathlib.Path(USER_FILES_DIR).mkdir(parents=True, exist_ok=True)
@@ -33,9 +38,14 @@ def lilypond_compile(text: str, username: str):
         file.write(text)
 
     # compile
-    # noinspection SpellCheckingInspection
-    output, error = lilypond_process(
-        ["-dbackend=eps", "-dresolution=300", "--png", "--loglevel=WARN", f"--output={USER_FILES_DIR}/", src_file])
+    try:
+        # noinspection SpellCheckingInspection
+        output, error = lilypond_process(
+            ["-dbackend=eps", "-dresolution=300", "--png", "--loglevel=WARN", f"--output={USER_FILES_DIR}/", src_file])
+    except Exception as exc:
+        output = ""
+        error = f"An error has occurred. Reporting to the dev...\n{type(exc).__name__}: {exc}"
+        context.dispatcher.dispatch_error(update, exc)
 
     # prettify output
     error = error.replace(f"{os.getcwd()}/", "") \
