@@ -69,5 +69,5 @@ def add_padding(file_path):
 def lilypond_process(args: List[str]):
     args.insert(0, "lilypond")
     process = subprocess.run(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
-                             text=True, env={**os.environ, "LANG": "en"})
+                             errors='replace', env={**os.environ, "LANG": "en"})
     return process.stdout, process.stderr
