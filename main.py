@@ -1,17 +1,17 @@
+import os
 import traceback
 from datetime import datetime, timezone
 from uuid import uuid4
 
 from telegram import Update, InlineQueryResultArticle, InputTextMessageContent
 from telegram.error import TelegramError
-from telegram.ext import Updater, CommandHandler, CallbackContext, JobQueue, Dispatcher, MessageHandler, \
+from telegram.ext import Updater, CommandHandler, CallbackContext, Dispatcher, MessageHandler, \
     InlineQueryHandler
 from telegram.ext.filters import Filters
 
+import constants
 import monitor
-import os
 from commands import start, help_, ping, version, send_compile_results
-from constants import RENYHP
 
 
 def chunks(s, n):
@@ -23,7 +23,7 @@ def chunks(s, n):
 def log_error(update: Update, context: CallbackContext):  # maybe use package "logging"?
     error: TelegramError = context.error
     error_str = f"{type(error).__name__}: {error}"
-    if update and update.effective_user and update.effective_user.id != RENYHP:
+    if update and update.effective_user and update.effective_user.id != constants.RENYHP:
         try:
             if update.message is not None:
                 update.message.reply_text(f"Oops! An error has occurred. Reporting to the dev..."
@@ -37,13 +37,13 @@ def log_error(update: Update, context: CallbackContext):  # maybe use package "l
     print("\n" + full_error_str + "\n\n")
     for chunk in chunks(full_error_str, 4000):
         try:
-            context.bot.send_message(RENYHP, chunk)
+            context.bot.send_message(constants.RENYHP, chunk)
         except TelegramError:
             pass
 
 
 def update_monitor(update: Update, context: CallbackContext):
-    if update.effective_user.id != RENYHP:
+    if update.effective_user.id != constants.RENYHP:
         monitor.user_ids.add(update.effective_user.id)
         monitor.latest_message_time = datetime.now(timezone.utc)
         if update.message:

@@ -1,20 +1,22 @@
 import os
-import shutil
 import pathlib
+import shutil
 import subprocess
 from datetime import datetime
 from typing import List
+
 from telegram import Update
 from telegram.ext import CallbackContext
 
+import constants
+
 
 def generate_filename(user: str):
-    from constants import USER_FILES_DIR
     counter = 0
     while True:
         filename = datetime.utcnow().strftime("%y%m%d%H%M%S") + "-" + user + \
                    ("" if counter == 0 else f"-{str(counter)}")
-        if any(filename in file for file in os.listdir(USER_FILES_DIR)):
+        if any(filename in file for file in os.listdir(constants.USER_FILES_DIR)):
             counter += 1
             continue
         else:
@@ -22,19 +24,17 @@ def generate_filename(user: str):
 
 
 def lilypond_compile(update: Update, context: CallbackContext):
-    from constants import USER_FILES_DIR, ERROR_FILES_DIR, LILY_VERSION, LILYSETTINGS_PATH
-
     text = update.inline_query.query if update.inline_query else update.message.text
     username = update.effective_user.username or str(update.effective_user.id)
 
     # where do we store the file
-    pathlib.Path(USER_FILES_DIR).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(constants.USER_FILES_DIR).mkdir(parents=True, exist_ok=True)
     filename = generate_filename(username)
-    src_file = f"{USER_FILES_DIR}/{filename}.ly"
+    src_file = f"{constants.USER_FILES_DIR}/{filename}.ly"
 
     # write the file
-    text = ("" if "\\version" in text else f'\\version "{LILY_VERSION}"'
-            ) + f'\\include "{LILYSETTINGS_PATH}"\n{text}'
+    text = ("" if "\\version" in text else f'\\version "{constants.LILY_VERSION}"'
+            ) + f'\\include "{constants.LILYSETTINGS_PATH}"\n{text}'
     with open(src_file, "w") as file:
         file.write(text)
 
@@ -42,17 +42,17 @@ def lilypond_compile(update: Update, context: CallbackContext):
     try:
         # noinspection SpellCheckingInspection
         output, error = lilypond_process(
-            ["-dbackend=eps", "-dresolution=300", "--png", "--loglevel=WARN", f"--output={USER_FILES_DIR}/", src_file])
+            ["-dbackend=eps", "-dresolution=300", "--png", "--loglevel=WARN", f"--output={constants.USER_FILES_DIR}/", src_file])
     except Exception as exc:
         output = ""
         error = f"An error has occurred. Reporting to the dev...\n{type(exc).__name__}: {exc}"
-        pathlib.Path(ERROR_FILES_DIR).mkdir(parents=True, exist_ok=True)
-        shutil.copy(src_file, f"{ERROR_FILES_DIR}/{filename}.ly")
+        pathlib.Path(constants.ERROR_FILES_DIR).mkdir(parents=True, exist_ok=True)
+        shutil.copy(src_file, f"{constants.ERROR_FILES_DIR}/{filename}.ly")
         context.dispatcher.dispatch_error(update, exc)
 
     # prettify output
     error = error.replace(f"{os.getcwd()}/", "") \
-        .replace(f"{USER_FILES_DIR}/", "") \
+        .replace(f"{constants.USER_FILES_DIR}/", "") \
         .replace(f"{filename}.ly:", "") \
         .replace("\n\n", "\n")
 

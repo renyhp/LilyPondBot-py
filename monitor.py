@@ -1,8 +1,9 @@
+import os
 from datetime import datetime, timezone
 
 from telegram.ext import CallbackContext
-import os
-from constants import COMMIT_HASH, START_TIME, LILY_VERSION, MONITOR, VERSION_NUMBER
+
+import constants
 
 latest_message_time = datetime.now(timezone.utc)
 messages_received = 0
@@ -13,16 +14,16 @@ user_ids = set()
 
 
 def get_monitor(bot_username):
-    return MONITOR.format(f"{VERSION_NUMBER}-{COMMIT_HASH}",
-                          bot_username,
-                          LILY_VERSION,
-                          START_TIME.strftime("%d/%m/%Y %H:%M:%S UTC"),
-                          latest_message_time.strftime("%d/%m/%Y %H:%M:%S UTC"),
-                          len(user_ids),
-                          messages_received,
-                          inline_queries,
-                          commands_processed,
-                          successful_compilations)
+    return constants.MONITOR.format(f"{constants.VERSION_NUMBER}-{constants.COMMIT_HASH}",
+                                    bot_username,
+                                    constants.LILY_VERSION,
+                                    constants.START_TIME.strftime("%d/%m/%Y %H:%M:%S UTC"),
+                                    latest_message_time.strftime("%d/%m/%Y %H:%M:%S UTC"),
+                                    len(user_ids),
+                                    messages_received,
+                                    inline_queries,
+                                    commands_processed,
+                                    successful_compilations)
 
 
 # not used anymore
