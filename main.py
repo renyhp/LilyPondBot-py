@@ -1,10 +1,11 @@
 import os
+import re
 import traceback
 from datetime import datetime, timezone
 from uuid import uuid4
 
 from telegram import Update, InlineQueryResultArticle, InputTextMessageContent
-from telegram.error import TelegramError
+from telegram.error import TelegramError, NetworkError
 from telegram.ext import Updater, CommandHandler, CallbackContext, Dispatcher, MessageHandler, \
     InlineQueryHandler
 from telegram.ext.filters import Filters
@@ -22,6 +23,8 @@ def chunks(s, n):
 
 def log_error(update: Update, context: CallbackContext):  # maybe use package "logging"?
     error: TelegramError = context.error
+    if type(error) == NetworkError and re.match(r"^urllib3 HTTPError.*Network is unreachable", str(error)):
+        return # ignore Network errors
     error_str = f"{type(error).__name__}: {error}"
     if update and update.effective_user and update.effective_user.id != constants.RENYHP:
         try:
