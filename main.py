@@ -1,5 +1,4 @@
 import os
-import re
 import traceback
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -23,8 +22,8 @@ def chunks(s, n):
 
 def log_error(update: Update, context: CallbackContext):  # maybe use package "logging"?
     error: TelegramError = context.error
-    if type(error) == NetworkError and re.match(r"^urllib3 HTTPError.*Network is unreachable", str(error)):
-        return # ignore Network errors
+    if type(error) == NetworkError:
+        return # ignore all network errors for now
     error_str = f"{type(error).__name__}: {error}"
     if update and update.effective_user and update.effective_user.id != constants.RENYHP:
         try:
