@@ -25,6 +25,8 @@ def start(update: Update, context):
 
 
 def secure_send(bot: Bot, chat_id, text: str, filename: str, is_inline_query: bool):
+    if not text:
+        return
     if len(text) < 4000:
         if is_inline_query:
             return InlineQueryResultArticle(uuid4(), "Log", InputTextMessageContent(text))
@@ -143,9 +145,9 @@ def send_compile_results(update: Update, context):
                 context.bot.send_message(constants.RENYHP, f"{midi_file} error.\n"
                                                            f"ffmpeg return code: {process.returncode}")
                 secure_send(context.bot, constants.RENYHP,
-                            error, f"{constants.ERROR_FILES_DIR}/{filename}.midi.error", False)
+                            process.stderr, f"{constants.ERROR_FILES_DIR}/{filename}.midi.error", False)
                 secure_send(context.bot, constants.RENYHP,
-                            output, f"{constants.ERROR_FILES_DIR}/{filename}.midi.output", False)
+                            process.stdout, f"{constants.ERROR_FILES_DIR}/{filename}.midi.output", False)
                 shutil.copy(midi_file, midi_file.replace(constants.USER_FILES_DIR, constants.ERROR_FILES_DIR))
                 file_to_send = midi_file
             else:
