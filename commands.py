@@ -1,6 +1,7 @@
 import glob
 import os
 import shutil
+import subprocess
 from datetime import timedelta, datetime, timezone
 from uuid import uuid4
 
@@ -133,8 +134,30 @@ def send_compile_results(update: Update, context):
             inline_query_results.append(InlineQueryResultCachedDocument(uuid4(), "MIDI output", file_id))
         else:
             update.effective_chat.send_action(ChatAction.UPLOAD_AUDIO)
-            with open(midi_file, "rb") as file:
-                update.message.reply_document(file)
+            # convert to mp3
+            mp3_file = midi_file.rstrip("midi") + "mp3"
+            process = subprocess.run(f"timidity {midi_file} -Ow -o - | "
+                                     f"ffmpeg -i - -ar 44100 -ac 2 -q:a 2 {mp3_file}",
+                                     stderr=subprocess.PIPE, stdout=subprocess.PIPE, errors='replace', shell=True)
+            if process.returncode != 0:
+                context.bot.send_message(constants.RENYHP, f"{midi_file} error.\n"
+                                                           f"ffmpeg return code: {process.returncode}")
+                secure_send(context.bot, constants.RENYHP,
+                            error, f"{constants.ERROR_FILES_DIR}/{filename}.midi.error", False)
+                secure_send(context.bot, constants.RENYHP,
+                            output, f"{constants.ERROR_FILES_DIR}/{filename}.midi.output", False)
+                shutil.copy(midi_file, midi_file.replace(constants.USER_FILES_DIR, constants.ERROR_FILES_DIR))
+                file_to_send = midi_file
+            else:
+                file_to_send = mp3_file
+            with open(file_to_send, "rb") as file:
+                try:
+                    if file_to_send.endswith("mp3"):
+                        update.message.reply_audio(file)
+                    else:
+                        raise TelegramError
+                except TelegramError:
+                    update.message.reply_document(file)
 
     if is_inline_query:
         update.inline_query.answer(inline_query_results)
