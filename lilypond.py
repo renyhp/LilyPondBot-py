@@ -1,5 +1,4 @@
 import os
-import pathlib
 import shutil
 import subprocess
 from datetime import datetime
@@ -28,7 +27,6 @@ def lilypond_compile(update: Update, context: CallbackContext):
     username = update.effective_user.username or str(update.effective_user.id)
 
     # where do we store the file
-    pathlib.Path(constants.USER_FILES_DIR).mkdir(parents=True, exist_ok=True)
     filename = generate_filename(username)
     src_file = f"{constants.USER_FILES_DIR}/{filename}.ly"
 
@@ -47,7 +45,6 @@ def lilypond_compile(update: Update, context: CallbackContext):
     except Exception as exc:
         output = ""
         error = f"An error has occurred. Reporting to the dev...\n{type(exc).__name__}: {exc}"
-        pathlib.Path(constants.ERROR_FILES_DIR).mkdir(parents=True, exist_ok=True)
         shutil.copy(src_file, f"{constants.ERROR_FILES_DIR}/{filename}.ly")
         context.dispatcher.dispatch_error(update, exc)
 

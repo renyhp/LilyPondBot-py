@@ -1,4 +1,5 @@
 import os
+import pathlib
 import traceback
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -69,6 +70,8 @@ def main():
                            group=1)
     dispatcher.add_handler(InlineQueryHandler(send_compile_results), group=1)
     dispatcher.add_error_handler(log_error)
+    pathlib.Path(constants.USER_FILES_DIR).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(constants.ERROR_FILES_DIR).mkdir(parents=True, exist_ok=True)
     updater.job_queue.run_repeating(monitor.cleanup, 30 * 60, 0)
     updater.start_polling(clean=True)
     print(f"Bot started! @{updater.bot.username}")
