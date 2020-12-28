@@ -71,6 +71,7 @@ def main():
     dispatcher.add_error_handler(log_error)
     # updater.job_queue.run_repeating(monitor.program_monitor, 60, 0)
     updater.start_polling(clean=True)
+    print(f"Bot started! @{updater.bot.username}")
     updater.idle()
 
 
