@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime, timezone
 
 from telegram.ext import CallbackContext
@@ -30,3 +31,11 @@ def get_monitor(bot_username):
 def program_monitor(context: CallbackContext):
     os.system('cls' if os.name == 'nt' else 'clear') or None
     print(get_monitor(context.bot.username))
+
+
+def cleanup(context: CallbackContext):
+    now = time.time()
+    for file in os.listdir(constants.USER_FILES_DIR):
+        file = os.path.join(constants.USER_FILES_DIR, file)
+        if os.path.isfile(file) and os.stat(file).st_mtime < now - 3600:
+            os.remove(file)
