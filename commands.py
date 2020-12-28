@@ -141,7 +141,3 @@ def send_compile_results(update: Update, context):
 
     if successfully_compiled and update.effective_user.id != constants.RENYHP:
         monitor.successful_compilations += 1
-
-    # clean up
-    for filename in glob.glob(f"{constants.USER_FILES_DIR}/{filename}*"):
-        os.remove(filename)

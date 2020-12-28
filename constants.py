@@ -8,7 +8,7 @@ RENYHP = 133748469
 DEV_NULL = -1001483993984
 
 LILYSETTINGS_PATH = "lilysettings.ly"
-USER_FILES_DIR = "user_files"
+USER_FILES_DIR = "/tmp/LilyPondBot"
 ERROR_FILES_DIR = "error_files"
 
 VERSION_NUMBER = "2.1"
