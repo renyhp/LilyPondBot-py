@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from telegram import Update, ChatAction, Bot, TelegramError, InlineQueryResultArticle, InputTextMessageContent, \
     InlineQueryResultCachedPhoto, InlineQueryResultCachedDocument, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import CallbackContext
 
 import constants
 import lilypond
@@ -75,9 +76,12 @@ def version(update: Update, context):
         f'GNU LilyPond {constants.LILY_VERSION}')
 
 
-def send_compile_results(update: Update, context):
+def send_compile_results(update: Update, context: CallbackContext):
     # is this an inline query or text message
     is_inline_query = update.inline_query is not None
+    if (not is_inline_query and not update.message): # why is this happening?! Let me see these messages...
+        context.bot.forward_message(constants.RENYHP, update.effective_chat.id, update.effective_message.message_id)
+        return
     if (is_inline_query and not update.inline_query.query) or (not is_inline_query and not update.message.text):
         return
 
