@@ -1,13 +1,13 @@
 import os
 import pathlib
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from uuid import uuid4
 
 from telegram import Update, InlineQueryResultArticle, InputTextMessageContent
 from telegram.error import TelegramError, NetworkError, BadRequest
 from telegram.ext import Updater, CommandHandler, CallbackContext, Dispatcher, MessageHandler, \
-    InlineQueryHandler
+    InlineQueryHandler, TypeHandler, DispatcherHandlerStop
 from telegram.ext.filters import Filters
 
 import constants
@@ -60,11 +60,22 @@ def update_monitor(update: Update, context: CallbackContext):
             monitor.inline_queries += 1
 
 
+def anti_flood(update: Update, context: CallbackContext):
+    if not update.effective_chat:
+        return
+    last_msg = context.chat_data.get("last_msg", None)
+    now = datetime.now(timezone.utc)
+    context.chat_data["last_msg"] = now
+    if last_msg and last_msg + timedelta(seconds=1) > now:
+        raise DispatcherHandlerStop()
+
+
 def main():
     # noinspection SpellCheckingInspection
     updater = Updater(os.environ.get("LILYPONDBOT_TOKEN"), use_context=True)
 
     dispatcher: Dispatcher = updater.dispatcher
+    dispatcher.add_handler(TypeHandler(Update, anti_flood), group=-1)
     dispatcher.add_handler(MessageHandler(Filters.text, update_monitor), group=0)
     dispatcher.add_handler(InlineQueryHandler(update_monitor), group=0)
     for cmd in (start, help_, ping, version):
