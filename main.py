@@ -12,13 +12,8 @@ from telegram.ext.filters import Filters
 
 import constants
 import monitor
-from commands import start, help_, ping, version, send_compile_results
+from commands import start, help_, ping, version, send_compile_results, chunks, inspect_update
 
-
-def chunks(s, n):
-    """Produce `n`-character chunks from `s`."""
-    for i in range(0, len(s), n):
-        yield s[i:i + n]
 
 
 def log_error(update: Update, context: CallbackContext):  # maybe use package "logging"?
@@ -28,6 +23,8 @@ def log_error(update: Update, context: CallbackContext):  # maybe use package "l
             type(error) == BadRequest and error.message == "Query is too old and response timeout expired or query " \
                                                            "id is invalid":
         return
+    if type(error) == BadRequest and error.message == "File must be non-empty":
+        inspect_update(update, context)
     error_str = f"{type(error).__name__}: {error}"
     if update and update.effective_user and update.effective_user.id != constants.RENYHP:
         try:

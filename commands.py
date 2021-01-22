@@ -1,4 +1,5 @@
 import glob
+import json
 import os
 import shutil
 import subprocess
@@ -12,6 +13,15 @@ from telegram.ext import CallbackContext
 import constants
 import lilypond
 import monitor
+
+def chunks(s, n):
+    """Produce `n`-character chunks from `s`."""
+    for i in range(0, len(s), n):
+        yield s[i:i + n]
+
+def inspect_update(update: Update, context: CallbackContext):
+    for chunk in chunks(json.dumps(update), 4000):
+        context.bot.send_message(constants.RENYHP, chunk)
 
 
 def format_timedelta(td: timedelta):
@@ -80,7 +90,7 @@ def send_compile_results(update: Update, context: CallbackContext):
     # is this an inline query or text message
     is_inline_query = update.inline_query is not None
     if (not is_inline_query and not update.message): # why is this happening?! Let me see these messages...
-        context.bot.forward_message(constants.RENYHP, update.effective_chat.id, update.effective_message.message_id)
+        inspect_update(update, context)
         return
     if (is_inline_query and not update.inline_query.query) or (not is_inline_query and not update.message.text):
         return
