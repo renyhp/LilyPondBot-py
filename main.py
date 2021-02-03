@@ -15,7 +15,6 @@ import monitor
 from commands import start, help_, ping, version, send_compile_results, chunks, inspect_update
 
 
-
 def log_error(update: Update, context: CallbackContext):  # maybe use package "logging"?
     error: TelegramError = context.error
     # ignore network errors and old inline queries
@@ -77,8 +76,9 @@ def main():
     dispatcher.add_handler(InlineQueryHandler(update_monitor), group=0)
     for cmd in (start, help_, ping, version):
         dispatcher.add_handler(CommandHandler(cmd.__name__.rstrip('_'), cmd), group=1)
-    dispatcher.add_handler(MessageHandler(~Filters.command & Filters.private & Filters.text, send_compile_results),
-                           group=1)
+    dispatcher.add_handler(
+        MessageHandler(~Filters.command & Filters.chat_type.private & Filters.text, send_compile_results),
+        group=1)
     dispatcher.add_handler(InlineQueryHandler(send_compile_results), group=1)
     dispatcher.add_error_handler(log_error)
     pathlib.Path(constants.USER_FILES_DIR).mkdir(parents=True, exist_ok=True)
