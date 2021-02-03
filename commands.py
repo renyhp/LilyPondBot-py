@@ -1,27 +1,28 @@
 import glob
 import json
-import os
 import shutil
 import subprocess
 from datetime import timedelta, datetime, timezone
 from uuid import uuid4
 
 from telegram import Update, ChatAction, Bot, TelegramError, InlineQueryResultArticle, InputTextMessageContent, \
-    InlineQueryResultCachedPhoto, InlineQueryResultCachedDocument, InlineKeyboardMarkup, InlineKeyboardButton
+    InlineQueryResultCachedPhoto, InlineQueryResultCachedDocument, InlineKeyboardMarkup, InlineKeyboardButton, ParseMode
 from telegram.ext import CallbackContext
 
 import constants
 import lilypond
 import monitor
 
+
 def chunks(s, n):
     """Produce `n`-character chunks from `s`."""
     for i in range(0, len(s), n):
         yield s[i:i + n]
 
+
 def inspect_update(update: Update, context: CallbackContext):
-    for chunk in chunks(json.dumps(update), 4000):
-        context.bot.send_message(constants.RENYHP, chunk)
+    for chunk in chunks(json.dumps(update.to_dict(), indent=2), 4000):
+        context.bot.send_message(constants.RENYHP, "<code>" + chunk + "</code>", ParseMode.HTML)
 
 
 def format_timedelta(td: timedelta):
@@ -89,7 +90,7 @@ def version(update: Update, context):
 def send_compile_results(update: Update, context: CallbackContext):
     # is this an inline query or text message
     is_inline_query = update.inline_query is not None
-    if (not is_inline_query and not update.message): # why is this happening?! Let me see these messages...
+    if (not is_inline_query and not update.message):  # why is this happening?! Let me see these messages...
         inspect_update(update, context)
         return
     if (is_inline_query and not update.inline_query.query) or (not is_inline_query and not update.message.text):
