@@ -23,7 +23,7 @@ def generate_filename(user: str):
 
 
 def lilypond_compile(update: Update, context: CallbackContext):
-    text = update.inline_query.query if update.inline_query else update.message.text
+    text = update.inline_query.query if update.inline_query else update.effective_message.text
     username = update.effective_user.username or str(update.effective_user.id)
 
     # where do we store the file

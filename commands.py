@@ -94,11 +94,11 @@ def version(update: Update, context):
 def send_compile_results(update: Update, context: CallbackContext):
     # is this an inline query or text message
     is_inline_query = update.inline_query is not None
-    if (not is_inline_query and not update.message):  # why is this happening?! Let me see these messages...
+    if (not is_inline_query and not update.effective_message):  # why is this happening?! Let me see these messages...
         context.bot.send_message(constants.RENYHP, "not inline query and not update.message:")
         inspect_update(update, context)
         return
-    if (is_inline_query and not update.inline_query.query) or (not is_inline_query and not update.message.text):
+    if (is_inline_query and not update.inline_query.query) or (not is_inline_query and not update.effective_message.text):
         return
 
     inline_query_results = []
@@ -143,9 +143,9 @@ def send_compile_results(update: Update, context: CallbackContext):
         else:
             with open(png_file, "rb") as file:
                 try:
-                    update.message.reply_photo(file)
+                    update.effective_message.reply_photo(file)
                 except TelegramError:
-                    update.message.reply_document(file)
+                    update.effective_message.reply_document(file)
 
     # send midi's
     for midi_file in glob.glob(f"{constants.USER_FILES_DIR}/{filename}*.midi"):
@@ -175,11 +175,11 @@ def send_compile_results(update: Update, context: CallbackContext):
             with open(file_to_send, "rb") as file:
                 try:
                     if file_to_send.endswith("mp3"):
-                        update.message.reply_audio(file)
+                        update.effective_message.reply_audio(file)
                     else:
                         raise TelegramError
                 except TelegramError:
-                    update.message.reply_document(file)
+                    update.effective_message.reply_document(file)
 
     if is_inline_query:
         update.inline_query.answer(inline_query_results)

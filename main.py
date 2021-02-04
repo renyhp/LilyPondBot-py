@@ -75,7 +75,7 @@ def main():
     dispatcher.add_handler(MessageHandler(Filters.text, update_monitor), group=0)
     dispatcher.add_handler(InlineQueryHandler(update_monitor), group=0)
     for cmd in (start, help_, ping, version):
-        dispatcher.add_handler(CommandHandler(cmd.__name__.rstrip('_'), cmd), group=1)
+        dispatcher.add_handler(CommandHandler(cmd.__name__.rstrip('_'), cmd, ~Filters.update.edited_message), group=1)
     dispatcher.add_handler(
         MessageHandler(~Filters.command & Filters.chat_type.private & Filters.text, send_compile_results),
         group=1)
