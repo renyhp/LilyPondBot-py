@@ -22,8 +22,6 @@ def log_error(update: Update, context: CallbackContext):  # maybe use package "l
             type(error) == BadRequest and error.message == "Query is too old and response timeout expired or query " \
                                                            "id is invalid":
         return
-    if type(error) == BadRequest and error.message == "File must be non-empty":
-        inspect_update(update, context)
     error_str = f"{type(error).__name__}: {error}"
     if update and update.effective_user and update.effective_user.id != constants.RENYHP:
         try:

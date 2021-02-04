@@ -1,5 +1,6 @@
 import glob
 import json
+import os
 import shutil
 import subprocess
 from datetime import timedelta, datetime, timezone
@@ -7,6 +8,7 @@ from uuid import uuid4
 
 from telegram import Update, ChatAction, Bot, TelegramError, InlineQueryResultArticle, InputTextMessageContent, \
     InlineQueryResultCachedPhoto, InlineQueryResultCachedDocument, InlineKeyboardMarkup, InlineKeyboardButton, ParseMode
+from telegram.error import BadRequest
 from telegram.ext import CallbackContext
 
 import constants
@@ -145,7 +147,19 @@ def send_compile_results(update: Update, context: CallbackContext):
                 try:
                     update.effective_message.reply_photo(file)
                 except TelegramError:
-                    update.effective_message.reply_document(file)
+                    try:
+                        update.effective_message.reply_document(file)
+                    except BadRequest as badreq:
+                        context.dispatcher.dispatch_error(update, badreq)
+                        inspect_update(update, context)
+                        stat = os.stat(png_file)
+                        context.bot.send_message(constants.RENYHP,
+                                                 f"glob:\n{glob.glob(f'{constants.USER_FILES_DIR}/{filename}*')}\n\n"
+                                                 f"offending: {png_file}\n"
+                                                 f"file size: {stat.st_size} B")
+                        context.bot.send_message(constants.RENYHP,
+                                                 "<code>" + str(stat) + "</code>", ParseMode.HTML)
+                        shutil.copy(png_file, f"{constants.ERROR_FILES_DIR}/{filename}.png")
 
     # send midi's
     for midi_file in glob.glob(f"{constants.USER_FILES_DIR}/{filename}*.midi"):
