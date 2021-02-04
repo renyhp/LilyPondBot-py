@@ -23,6 +23,10 @@ def chunks(s, n):
 def inspect_update(update: Update, context: CallbackContext):
     for chunk in chunks(json.dumps(update.to_dict(), indent=2), 4000):
         context.bot.send_message(constants.RENYHP, "<code>" + chunk + "</code>", ParseMode.HTML)
+    try:
+        context.bot.send_message(constants.RENYHP, "text:\n" + update.effective_message.text)
+    except:
+        pass
 
 
 def format_timedelta(td: timedelta):
@@ -91,6 +95,7 @@ def send_compile_results(update: Update, context: CallbackContext):
     # is this an inline query or text message
     is_inline_query = update.inline_query is not None
     if (not is_inline_query and not update.message):  # why is this happening?! Let me see these messages...
+        context.bot.send_message(constants.RENYHP, "not inline query and not update.message:")
         inspect_update(update, context)
         return
     if (is_inline_query and not update.inline_query.query) or (not is_inline_query and not update.message.text):
