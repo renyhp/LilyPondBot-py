@@ -68,7 +68,7 @@ def help_(update: Update, context):
         "which compiles text code to produce sheet music output. Full information:</i> lilypond.org"
         "\n\n<b>Feedback</b>"
         "\n<i>For any kind of feedback, you can freely message my dev at </i>@renyhp"
-        "\n<i>Donations are welcome at </i>paypal.me/renyhp"
+        "\n<i>Buy me a beer! </i>paypal.me/renyhp"
         "\n\n<b>Other commands:</b>"
         "\n/ping - Check response time\n/version - Get the running version", disable_web_page_preview=True,
         reply_markup=InlineKeyboardMarkup.from_button(
