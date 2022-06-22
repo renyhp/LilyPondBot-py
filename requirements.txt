@@ -3,7 +3,7 @@ certifi==2020.12.5
 cffi==1.14.4
 cryptography==3.3.1
 decorator==4.4.2
-numpy==1.19.4
+numpy==1.22.0
 opencv-python==4.4.0.46
 pycparser==2.20
 python-telegram-bot==13.1
