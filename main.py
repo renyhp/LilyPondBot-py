@@ -43,8 +43,9 @@ def log_error(update: Update, context: CallbackContext):  # maybe use package "l
 
 
 def update_monitor(update: Update, context: CallbackContext):
-    if update.effective_user.id != constants.RENYHP:
-        monitor.user_ids.add(update.effective_user.id)
+    user_id = update.effective_user.id if update.effective_user is not None else update.effective_chat.id if update.effective_chat is not None else None
+    if user_id != constants.RENYHP:
+        monitor.user_ids.add(user_id)
         monitor.latest_message_time = datetime.now(timezone.utc)
         if update.message:
             monitor.messages_received += 1
