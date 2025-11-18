@@ -43,7 +43,7 @@ def lilypond_compile(update: Update, context: CallbackContext):
     try:
         # noinspection SpellCheckingInspection
         output, error = lilypond_process(
-            ["-dbackend=eps", "-dresolution=300", "--png", "--loglevel=WARN", f"--output={constants.USER_FILES_DIR}/",
+            ["-dcrop", "-dresolution=300", "--png", "--loglevel=WARN", f"--output={constants.USER_FILES_DIR}/",
              src_file])
     except Exception as exc:
         output = ""

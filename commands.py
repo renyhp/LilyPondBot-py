@@ -133,7 +133,7 @@ def send_compile_results(update: Update, context: CallbackContext):
     successfully_compiled = False
 
     # send png's
-    for png_file in glob.glob(f"{constants.USER_FILES_DIR}/{filename}*.png"):
+    for png_file in glob.glob(f"{constants.USER_FILES_DIR}/{filename}.cropped.png"):
         successfully_compiled = True  # yay compiled
         if not is_inline_query:
             update.effective_chat.send_action(ChatAction.UPLOAD_PHOTO)
