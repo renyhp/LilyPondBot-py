@@ -3,6 +3,7 @@ import shutil
 import subprocess
 from datetime import datetime
 from typing import List
+import re
 
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -31,8 +32,10 @@ def lilypond_compile(update: Update, context: CallbackContext):
     src_file = f"{constants.USER_FILES_DIR}/{filename}.ly"
 
     # write the file
-    text = ("" if "\\version" in text else f'\\version "{constants.LILY_VERSION}"'
-            ) + f'\\include "{constants.LILYSETTINGS_PATH}"\n{text}'
+    text = f'\\include "{constants.LILYSETTINGS_PATH}"\n{text}'
+    if "\\version" not in text:
+        version = re.search(r"GNU LilyPond (\d+\.\d+\.\d+)", constants.LILY_VERSION).group(1)
+        text = f'\\version "{version}"\n{text}'
     with open(src_file, "w") as file:
         file.write(text)
 

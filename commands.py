@@ -90,7 +90,7 @@ def version(update: Update, context):
     update.message.reply_html(
         f'LilyPondBot v{constants.VERSION_NUMBER}-<code>{constants.COMMIT_HASH}</code> '
         f'(<a href="https://github.com/renyhp/LilyPondBot-py/tree/{constants.COMMIT_HASH}">source code</a>)\n'
-        f'GNU LilyPond {constants.LILY_VERSION}')
+        f'{constants.LILY_VERSION}')
 
 
 def send_compile_results(update: Update, context: CallbackContext):
